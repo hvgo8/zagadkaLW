@@ -1,0 +1,183 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strona z zagadkami</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #333;
+            /* Kolor tekstu dla całej strony */
+        }
+
+        #puzzle-container {
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-container {
+            position: relative;
+            width: 100%;
+        }
+
+        input {
+            padding: 5px;
+            margin: 10px 0;
+            width: calc(100% - 16px);
+            /* Odejmujemy padding dla pełnej szerokości */
+        }
+
+        iframe,
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+
+        /* Kolor tekstu dla zagadki 1 */
+        #puzzle-text-1 {
+            color: #fff;
+            /* Biały kolor tekstu dla zagadki 1 */
+        }
+
+        #password-container {
+            margin-top: 20px;
+        }
+
+        #content-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+<div id="puzzle-container">
+    <h2 id="puzzle-number"></h2>
+    <div id="puzzle-content"></div>
+    <div class="input-container">
+        <label for="passwordInput">Hasło:</label>
+        <input type="text" id="passwordInput" placeholder="Wprowadź hasło">
+    </div>
+    <div id="password-container"></div>
+    <button onclick="checkPassword()">Sprawdź</button>
+    <p id="result"></p>
+    <div id="media-container"></div>
+    <div id="content-container"></div>
+</div>
+
+<script>
+    let currentPuzzle = 1;
+    const puzzles = [
+        { question: "Zagadka 1", answer: "Speed-Tank", content: "Poproś prowadzącego o plik" },
+        { question: "Zagadka 2", answer: "Nie dotykać urządzenie elektryczne", content: "EOYAUĄEIEEEYE" },
+        { question: "Zagadka 3", answer: "Czarne jajo", content: "Poproś prowadzącego o plik" },
+        { question: "Zagadka 4", answer: "Magulo", content: "Przepis:<br>- gówno 10g<br>- cebula 30g" },
+        { question: "Zagadka 5", answer: "Dzieja", content: "Podmiot liryczny prawdopodobnie się zgubił i zdezorientowany miejscem, w ktorym się znajduje, zadaje adekwatne pytanie, ale nie dodaje na końcu czasownika być w czasie teraźniejszym w 1 osobie liczby pojedynczej." },
+        { question: "Zagadka 6", answer: "", content: "Czas to pieniądz, ale nie tylko pieniądz." }, // Hasło do tej zagadki to aktualna godzina
+        { question: "Zagadka 7", answer: "Mazurowska strona", content: "Poproś prowadzącego o plik" },
+        { question: "Zagadka 8", answer: "Gadzik", content: "Poproś prowadzącego o plik" },
+        { question: "Zagadka 9", answer: "Wuzel", content: "Czego oczy nie widzą tego sercu nie żal<br><span style='color: white;'>Wuzel</span>" },
+        { question: "Zagadka 10", answer: "Danka sklepowa", content: "Poproś prowadzącego o plik" },
+        { question: "Zagadka 11", answer: "", content: "Sprawdź się" },
+        { question: "Zagadka 12", answer: "Lasek", content: "50.813334, 22.536243" },
+        { question: "Zagadka 13", answer: "13", content: "" },
+        { question: "Zagadka 14", answer: "Bandycki numer", content: "Niedozwolony manewr uliczny" },
+        { question: "Zagadka 15", answer: "Spot-dup", content: "Poproś prowadzącego o plik" },
+        { question: "Zagadka 16", answer: "Debil", content: "Poproś prowadzącego o plik" },
+        { question: "Zagadka 17", answer: "Radiowóz", content: "Potoczna nazwa na wózek na maliny" },
+        { question: "Zagadka 18", answer: "35", content: "Ile lat trzeba pracować żeby mieć 500zł renty?" },
+        { question: "Zagadka 19", answer: "Zdybać", content: "Hasło trzeba ZNALEŹĆ" },
+        { question: "Zagadka 20", answer: "Lelewel", content: "Nikt nie wie kim był jąkający się poziom" },
+        { question: "Zagadka 21", answer: "Dobra", content: "Wiesz co?" },
+        { question: "Zagadka 22", answer: "Łotrocz", content: "Wieś na ł" },
+        { question: "Zagadka 23", answer: "Sura", content: "- jura<br>- aura<br>- natura<br>- emerytura<br>- kura" },
+        { question: "Zagadka 24", answer: "Sentino", content: "Poproś prowadzącego o plik" },
+        { question: "Zagadka 25", answer: "Płapładziadek", content: "Prapradziadek ~ Paweł Biełnat" },
+        { question: "Zagadka 26", answer: "Lukas W", content: "4.5/23.2/2.14/19.3/1.1/   /20.5" }
+    ];
+
+    function loadPuzzle() {
+        const puzzleNumberElement = document.getElementById('puzzle-number');
+        const puzzleContentElement = document.getElementById('puzzle-content');
+        const passwordContainer = document.getElementById('password-container');
+        const passwordInput = document.getElementById('passwordInput');
+        const resultElement = document.getElementById('result');
+        const mediaContainer = document.getElementById('media-container');
+        const contentContainer = document.getElementById('content-container');
+
+        puzzleNumberElement.textContent = `Zagadka ${currentPuzzle}`;
+        passwordInput.value = '';
+        resultElement.textContent = '';
+
+        const mediaContent = puzzles[currentPuzzle - 1].content;
+
+        if (mediaContent.includes('imgur') || mediaContent.includes('tinypic') || mediaContent.includes('youtube')) {
+            const urlText = document.createElement('p');
+            urlText.textContent = mediaContent;
+            mediaContainer.innerHTML = ''; // Wyczyszczenie poprzedniego elementu multimedialnego
+            mediaContainer.appendChild(urlText);
+        } else {
+            mediaContainer.innerHTML = ''; // Wyczyszczenie elementu multimedialnego, jeśli go nie ma
+        }
+
+        if (currentPuzzle === 1) {
+            const passwordText = document.createElement('p');
+            passwordText.textContent = "jtd";
+            passwordText.style.color = "#fff";
+            passwordContainer.innerHTML = '';
+            passwordContainer.appendChild(passwordText);
+        } else {
+            passwordContainer.innerHTML = ''; // Wyczyszczenie elementu z tekstem hasła
+        }
+
+        const contentText = document.createElement('p');
+        contentText.innerHTML = puzzles[currentPuzzle - 1].content;
+        contentContainer.innerHTML = ''; // Wyczyszczenie poprzedniego elementu z treścią zagadki
+        contentContainer.appendChild(contentText);
+    }
+
+    function checkPassword() {
+        const passwordInput = document.getElementById('passwordInput');
+        const resultElement = document.getElementById('result');
+        const userAnswer = passwordInput.value.toLowerCase();
+        const correctAnswer = puzzles[currentPuzzle - 1].answer.toLowerCase();
+
+        if (userAnswer === correctAnswer || (currentPuzzle === 6 && checkCurrentTime(userAnswer))) {
+            resultElement.textContent = 'Poprawne hasło! Przechodzisz do następnej zagadki.';
+            currentPuzzle++;
+
+            if (currentPuzzle > puzzles.length) {
+                resultElement.textContent = 'JESTEŚ BOSSEM TEJ GRY';
+            } else {
+                loadPuzzle();
+            }
+        } else {
+            resultElement.textContent = 'Nieprawidłowe hasło. Spróbuj ponownie.';
+        }
+    }
+
+    function checkCurrentTime(userAnswer) {
+        const currentTime = new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+        return userAnswer === currentTime;
+    }
+
+    // Inicjalne wczytanie zagadki
+    loadPuzzle();
+</script>
+</body>
+
+</html>
